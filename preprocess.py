@@ -14,16 +14,21 @@ def tokenize(path):
         first = True
         for token in doc:
             if first:
-                sent.append(token.text)
+                if token.is_space == False:
+                    sent.append(token.text)
                 first = False
             elif token.is_sent_start:
                 spacy_tok_sents.append(sent)
                 sent = []
-                sent.append(token.text)
+                if token.is_space == False:
+                    sent.append(token.text)
             else:
-                sent.append(token.text)
+                if token.is_space == False:
+                    sent.append(token.text)
 
         tokenizer = AutoTokenizer.from_pretrained("emilyalsentzer/Bio_ClinicalBERT")
         model = AutoModel.from_pretrained("emilyalsentzer/Bio_ClinicalBERT")
-        bert_tokens = tokenizer(spacy_tok_sents,padding=True, truncation=True, max_length=512, return_tensors="pt", is_split_into_words=True)
+        print(spacy_tok_sents[0])
+        bert_tokens = tokenizer(spacy_tok_sents[0],padding=True, truncation=True, max_length=512, return_tensors="pt", is_split_into_words=True, return_offsets_mapping=True)
+        print(bert_tokens.offset_mapping)
 
