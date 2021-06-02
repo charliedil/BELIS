@@ -41,6 +41,7 @@ def tokenize(path):
         subwords = []
         first = True
         for token in doc:
+            bert_token = tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))
             if int(bert_tokens.input_ids[j][i]) == 102:
                 i = 1
                 j += 1
