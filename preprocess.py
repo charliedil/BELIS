@@ -40,23 +40,38 @@ def tokenize(path):
         # for more than one doc, for doc in docs?
         subwords = []
         first = True
+        finished = True
         for token in doc:
             bert_token = tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))
             if int(bert_tokens.input_ids[j][i]) == 102:
                 i = 1
                 j += 1
             if token.text.lower().startswith(tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))):
+                if token.text.lower() != tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i])).lower():
+                    finished=False
+                else:
+                    finished = True
                 if first == False:
                     doc.user_data["subwords"].append(subwords)
                     subwords=[]
                 subwords.append(tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i])))
-            elif tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i])).startswith("##"):
+            elif tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i])).startswith("##") or finished==False:
                 subwords.append(tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i])))
                 i+=1
-                while(token.text.lower().startswith(tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i])))==False and tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i])).startswith("##")):
+                temp = ""+subwords[0].lower() +subwords[1].lower()
+                while(token.text.lower().startswith(tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i])))==False and (tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i])).startswith("##") or finished==False)):
                     subwords.append(tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i])))
                     i+=1
+                    temp+=subwords[len(subwords)-1].lower()
+                    if token.text.lower() == temp:
+                        finished=True
+                finished=True
+
                 if token.text.lower().startswith(tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))):
+                    if token.text.lower() != tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i])).lower():
+                        finished = False
+                    else:
+                        finished = True
                     if first == False:
                         doc.user_data["subwords"].append(subwords)
                         subwords = []
@@ -69,7 +84,7 @@ def tokenize(path):
             else:
                 doc.user_data["subwords"].append(subwords)
                 subwords = []
-
+                finished=True
                 i-=1
             i+=1
             first = False
