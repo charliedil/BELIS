@@ -31,8 +31,12 @@ def tokenize(path):
             spacy_tok_sents.append(sent)
         tokenizer = AutoTokenizer.from_pretrained("emilyalsentzer/Bio_ClinicalBERT")
         model = AutoModel.from_pretrained("emilyalsentzer/Bio_ClinicalBERT")
-        bert_tokens = tokenizer(spacy_tok_sents,padding=True, truncation=True, max_length=512, return_tensors="pt", is_split_into_words=True, return_offsets_mapping=True)
-        print(bert_tokens)
+        bert_tokens_w_offsets = tokenizer(spacy_tok_sents,padding=True, truncation=True, max_length=512, return_tensors="pt", is_split_into_words=True, return_offsets_mapping=True)
+        bert_tokens = tokenizer(spacy_tok_sents, padding=True, truncation=True, max_length=512,
+                                          return_tensors="pt", is_split_into_words=True)
+        bert_outputs = model(**bert_tokens)
+        print(bert_outputs)
+        exit()
 
         doc.user_data = {}
         doc.user_data["subwords"] = []
