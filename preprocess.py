@@ -42,6 +42,7 @@ def tokenize(path):
         doc.user_data = {}
         doc.user_data["subwords"] = []
         doc.user_data["subword_embeddings"] = []
+        doc.user_data["spans"] = []
         i=1
         j=0
         # for more than one doc, for doc in docs?
@@ -54,6 +55,7 @@ def tokenize(path):
         print(bert_tokens.input_ids.size())
 
         for token in doc:
+            doc.user_data["spans"].append((token.idx, len(token.text)))
             bert_token = tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))
             while (j<bert_tokens.input_ids.size()[0] and int(bert_tokens.input_ids[j][i]) == 102):
                 i = 1
@@ -124,12 +126,13 @@ def tokenize(path):
             bert_token = tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))
             first = False
             prev = token.text
+            prev = token.span
         diff = len(doc) - len(doc.user_data["subwords"])
         for i in range(len(doc)-diff, len(doc)):
             doc.user_data["subwords"].append([])
             doc.user_data["subword_embeddings"].append([])
-        doc_bin.add(doc)
-    doc_bin.to_disk("datasets/testing")
+        #doc_bin.add(doc)
+    #doc_bin.to_disk("datasets/testing")
         # print(len(doc))
         # print("here they are:"+doc[4611].text+doc[4612].text+doc[4613].text)
         # print(len(doc.user_data["subwords"]))
