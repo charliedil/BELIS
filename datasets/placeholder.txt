@@ -1,0 +1,1 @@
+This folder is used to hold the docbin files obtained from preprocessing. Path to this is hard coded in preprocess.py file
