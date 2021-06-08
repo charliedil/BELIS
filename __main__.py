@@ -4,6 +4,7 @@ import spacy
 from spacy.tokens import DocBin
 from spacy.vocab import Vocab
 from preprocess import tokenize
+from test import test_load_docbin
 parser = argparse.ArgumentParser(description="Run BELIS")
 parser.add_argument("--preprocess", help="Initiate tokenization preprocessing", action="store_true")
 parser.add_argument("--torch_dataset", help="Path to torch dataset file. Required if --preprocess is not true.")
@@ -29,12 +30,5 @@ if preprocess: #write actuall preprocessing code here
     tokenize(raw_files)
 else:
     print("Testing load capabilities: \nTODO: Modularize this code in separate cluster_algo file")
-    doc_bin = DocBin().from_disk("BELIS/datasets/n2c2_100035.spacy")
-    vocab = Vocab().from_disk("BELIS/datasets/n2c2_100035_vocab.spacy")
-    docs = list(doc_bin.get_docs(vocab))
-    for d in docs:
-        for i in range(len(d.user_data["subwords"])):
-            assert(len(d.user_data["subwords"][i])==len(d.user_data["subword_embeddings"][i]))
-            #print(len(d.user_data["subwords"]))
-            #print(len(d.user_data["subword_embeddings"]))
-    #print(docs)
+    
+    test_load_docbin("BELIS/datasets/n2c2_100035.spacy", "BELIS/datasets/n2c2_100035_vocab.spacy")
