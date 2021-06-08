@@ -163,8 +163,8 @@ def tokenize(path):
             doc.user_data["subword_embeddings"].append([])
             doc.user_data["subword_spans"].append([])
         doc_bin.add(doc)
-    doc_bin.to_disk("BELIS/datasets/testing")
-        
+    doc_bin.to_disk("BELIS/datasets/n2c2_100035.spacy")
+    nlp.vocab.to_disk("BELIS/datasets/n2c2_100035_vocab.spacy")    
         
         
         ##DEBUG PRINTS -- Weird stuff with spans...
