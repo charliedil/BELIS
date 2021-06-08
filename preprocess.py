@@ -162,16 +162,21 @@ def tokenize(path):
             doc.user_data["subwords"].append([])
             doc.user_data["subword_embeddings"].append([])
             doc.user_data["subword_spans"].append([])
-        #doc_bin.add(doc)
-    #doc_bin.to_disk("datasets/testing")
+        doc_bin.add(doc)
+    doc_bin.to_disk("BELIS/datasets/testing")
+        
+        
+        
+        ##DEBUG PRINTS -- Weird stuff with spans...
+        
         # print(len(doc))
         # print("here they are:"+doc[4611].text+doc[4612].text+doc[4613].text)
         # print(len(doc.user_data["subwords"]))
         # exit()
-        i=0
-        print(len(doc))
-        print(len(doc.user_data["spans"]))
-        print(len(doc.user_data["subword_spans"]))
-        for token in doc:
-            print("Word: "+token.text+"\tSubwords: "+str(doc.user_data["subwords"][i])+"\t Word Spans: "+str(doc.user_data["spans"][i])+"\t Subword spans: "+ str(doc.user_data["subword_spans"][i]))
-            i+=1
+        #i=0
+        #print(len(doc))
+        #print(len(doc.user_data["spans"]))
+        #print(len(doc.user_data["subword_spans"]))
+        #for token in doc:
+            #print("Word: "+token.text+"\tSubwords: "+str(doc.user_data["subwords"][i])+"\t Word Spans: "+str(doc.user_data["spans"][i])+"\t Subword spans: "+ str(doc.user_data["subword_spans"][i]))
+           # i+=1
