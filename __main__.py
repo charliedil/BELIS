@@ -5,6 +5,7 @@ from spacy.tokens import DocBin
 from spacy.vocab import Vocab
 from preprocess import tokenize
 from test import test_load_docbin
+from preprocess import entity_labeling
 parser = argparse.ArgumentParser(description="Run BELIS")
 parser.add_argument("--preprocess", help="Initiate tokenization preprocessing", action="store_true")
 parser.add_argument("--torch_dataset", help="Path to torch dataset file. Required if --preprocess is not true.")
@@ -30,5 +31,5 @@ if preprocess: #write actuall preprocessing code here
     tokenize(raw_files)
 else:
     print("Testing load capabilities: \nTODO: Modularize this code in separate cluster_algo file")
-    
+    entity_labeling("BELIS/datasets/n2c2_100035.spacy", "BELIS/datasets/n2c2_100035_vocab.spacy", "../n2c2/temp2/100035.ann")
     test_load_docbin("BELIS/datasets/n2c2_100035.spacy", "BELIS/datasets/n2c2_100035_vocab.spacy")

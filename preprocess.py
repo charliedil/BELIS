@@ -3,6 +3,7 @@ import pickle
 
 import spacy
 from spacy.tokens import DocBin
+from spacy.vocab import Vocab
 from transformers import AutoTokenizer, AutoModel
 def tokenize(path):
     nlp = spacy.load("en_core_web_sm")
@@ -180,3 +181,31 @@ def tokenize(path):
         #for token in doc:
             #print("Word: "+token.text+"\tSubwords: "+str(doc.user_data["subwords"][i])+"\t Word Spans: "+str(doc.user_data["spans"][i])+"\t Subword spans: "+ str(doc.user_data["subword_spans"][i]))
            # i+=1
+
+##TODO: modify for use on multiple docs... after pipeline is fixed
+def entity_labeling(docbin_path,vocab_path, ann_path):
+    doc_bin = DocBin().from_disk(docbin_path)
+    vocab = Vocab().from_disk(vocab_path)
+    docs = list(doc_bin.get_docs(vocab))
+    new_docbin =  DocBin(attrs=["LEMMA", "ENT_IOB", "ENT_TYPE"], store_user_data=True)
+    for d in docs:
+        d.user_data["ents"] = []
+        for token in d:
+            d.user_data["ents"].append("Other")
+
+
+        with open(ann_path, "r") as f:
+            lines = f.read().split("\n")
+            for l in lines:
+                if l.startswith("T"):
+                    entity = l.split("\t")[1].split(" ")[0]
+                    start_span = int(l.split("\t")[1].split(" ")[1])
+                    end_span = int(l.split("\t")[1].split(" ")[2])
+                    for i in range(len(d.user_data["spans"])):
+                        spacy_span = d.user_data["spans"][i]
+                        if spacy_span[0] <= start_span and spacy_span[1]>= end_span:
+                            d.user_data["ents"][i] = entity
+                            break
+        new_docbin.add(d)
+    doc_bin.to_disk("BELIS/datasets/n2c2_100035_labeled.spacy")
+
