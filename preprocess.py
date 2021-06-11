@@ -204,8 +204,14 @@ def entity_labeling(docbin_path,vocab_path, ann_path):
                     for i in range(len(d.user_data["spans"])):
                         spacy_span = d.user_data["spans"][i]
                         if spacy_span[0] <= start_span and spacy_span[1]>= end_span:
-                            d.user_data["ents"][i] = entity
+                            labels = []
+                            for j in range(len(d.user_data["subwords"][i])):
+                                if j == 0:
+                                    labels.append("B-"+entity)
+                                else:
+                                    labels.append("I-"+entity)
+                            d.user_data["ents"].append(labels)
                             break
         new_docbin.add(d)
-    doc_bin.to_disk("BELIS/datasets/n2c2_100035_labeled.spacy")
+    doc_bin.to_disk("BELIS/datasets/n2c2_100035_labeled_subwords.spacy")
 
