@@ -10,5 +10,5 @@ def k_mean_cluster(doc):
         for i in range(len(doc.user_data["ents"][j])):
             if(len(doc.user_data["ents"][j])!=1):
                 embeddings.append(doc.user_data["subword_embeddings"][j][i])
-    kmeans = KMeans(n_clusters=3, random_state=0).fit(embeddings)
+    kmeans = KMeans(n_clusters=9, random_state=0).fit(embeddings)
     return kmeans.labels_
