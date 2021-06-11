@@ -182,7 +182,7 @@ def tokenize(path,ann_path):
                                     labels.append("B-"+entity)
                                 else:
                                     labels.append("I-"+entity)
-                            doc.user_data["ents"].append(labels)
+                            doc.user_data["ents"][i]=labels
                             break
 
         doc_bin.add(doc)
@@ -215,6 +215,8 @@ def entity_labeling(docbin_path,vocab_path, ann_path):
         d.user_data["ents"] = []
         for token in d:
             d.user_data["ents"].append(["Other"])
+        print(len(d.user_data["ents"]))
+        exit()
 
 
         with open(ann_path, "r") as f:
@@ -234,7 +236,7 @@ def entity_labeling(docbin_path,vocab_path, ann_path):
                                     labels.append("B-"+entity)
                                 else:
                                     labels.append("I-"+entity)
-                            d.user_data[i]=labels
+                            d.user_data["ents"][i]=labels
                             break
         new_docbin.add(d)
     doc_bin.to_disk("BELIS/datasets/n2c2_100035_labeled_subwords.spacy")
