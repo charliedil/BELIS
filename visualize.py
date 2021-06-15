@@ -8,7 +8,7 @@ import pandas as pd
 import spacy
 from spacy.tokens import DocBin
 from spacy.vocab import Vocab
-from kmeans_clustering import k_mean_cluster
+from clustering_algos import k_mean_cluster
 import umap
 
 def get_embeddings_and_labels(doc):
