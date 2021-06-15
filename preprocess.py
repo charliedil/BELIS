@@ -164,8 +164,14 @@ def tokenize(path,ann_path):
             doc.user_data["subword_embeddings"].append([])
             doc.user_data["subword_spans"].append([])
         doc.user_data["ents"]=[]
-        for token in doc:
-            doc.user_data["ents"].append(["Other"])
+        for i in range(len(doc.user_data["subwords"])):
+            labels = []
+            for j in range(len(doc.user_data["subwords"][i])):
+                if j==0:
+                    labels.append("B-Other")
+                else:
+                    labels.append("I-Other")
+            doc.user_data["ents"].append(labels)
         with open(ann_path, "r") as f:
             lines = f.read().split("\n")
             for l in lines:
