@@ -5,7 +5,6 @@ from spacy.tokens import DocBin
 from spacy.vocab import Vocab
 from preprocess import tokenize
 from test import test_load_docbin
-from preprocess import entity_labeling
 from visualize import draw
 parser = argparse.ArgumentParser(description="Run BELIS")
 parser.add_argument("--preprocess", help="Initiate tokenization preprocessing", action="store_true")

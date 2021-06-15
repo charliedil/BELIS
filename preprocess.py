@@ -192,8 +192,8 @@ def tokenize(path,ann_path):
                             break
 
         doc_bin.add(doc)
-    doc_bin.to_disk("BELIS/datasets/n2c2_100035_labeled_subwords_real.spacy")
-    nlp.vocab.to_disk("BELIS/datasets/n2c2_100035_vocab.spacy")
+    doc_bin.to_disk("BELIS/datasets/n2c2_train_labeled.spacy")
+    nlp.vocab.to_disk("BELIS/datasets/n2c2_train_vocab.spacy")
     print("DONE")
         
         
