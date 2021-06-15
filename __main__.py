@@ -29,10 +29,10 @@ elif preprocess!=True and td_path == None:
 if preprocess: #write actuall preprocessing code here
     if raw_files.endswith("/") == False:
          raw_files += "/"
-    tokenize(raw_files)
+    tokenize(raw_files,"../n2c2/temp2/100035.ann")
 else:
     print("Let's make a pretty picture.")
-    draw("C:/Users/nehav/Desktop/n2c2_100035_labeled.spacy")
+    #draw("C:/Users/nehav/Desktop/n2c2_100035_labeled.spacy")
     #print("Testing load capabilities: \nTODO: Modularize this code in separate cluster_algo file")
     #entity_labeling("BELIS/datasets/n2c2_100035.spacy", "BELIS/datasets/n2c2_100035_vocab.spacy", "../n2c2/temp2/100035.ann")
-    #test_load_docbin("BELIS/datasets/n2c2_100035.spacy", "BELIS/datasets/n2c2_100035_vocab.spacy")
+    test_load_docbin("BELIS/datasets/n2c2_100035.spacy", "BELIS/datasets/n2c2_100035_vocab.spacy")
