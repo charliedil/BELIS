@@ -42,6 +42,7 @@ def map_embedding_to_entity(embeddings, entity_labels):
     mapping["Reason"] = []
     mapping["Strength"] = []
     mapping["Route"] = []
+    mapping["Other"] = []
     i=0
     for key in entity_labels:
         mapping[key].append(embeddings[i])

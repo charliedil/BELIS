@@ -35,4 +35,4 @@ else:
     draw("C:/Users/nehav/Desktop/n2c2_100035_labeled_subwords_real.spacy")
     #print("Testing load capabilities: \nTODO: Modularize this code in separate cluster_algo file")
     #entity_labeling("BELIS/datasets/n2c2_100035.spacy", "BELIS/datasets/n2c2_100035_vocab.spacy", "../n2c2/temp2/100035.ann")
-    test_load_docbin("BELIS/datasets/n2c2_100035.spacy", "BELIS/datasets/n2c2_100035_vocab.spacy")
+    #test_load_docbin("BELIS/datasets/n2c2_100035.spacy", "BELIS/datasets/n2c2_100035_vocab.spacy")
