@@ -8,7 +8,7 @@ import pandas as pd
 import spacy
 from spacy.tokens import DocBin
 from spacy.vocab import Vocab
-from kmeans_clustering import k_mean_cluster
+from clustering_algos import k_mean_cluster
 import umap
 
 def get_embeddings_and_labels(doc):
@@ -42,6 +42,7 @@ def map_embedding_to_entity(embeddings, entity_labels):
     mapping["Reason"] = []
     mapping["Strength"] = []
     mapping["Route"] = []
+    mapping["Other"] = []
     i=0
     for key in entity_labels:
         mapping[key].append(embeddings[i])
