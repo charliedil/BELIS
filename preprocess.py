@@ -193,7 +193,8 @@ def tokenize(path,ann_path):
 
         doc_bin.add(doc)
     doc_bin.to_disk("BELIS/datasets/n2c2_100035_labeled_subwords_real.spacy")
-    nlp.vocab.to_disk("BELIS/datasets/n2c2_100035_vocab.spacy")    
+    nlp.vocab.to_disk("BELIS/datasets/n2c2_100035_vocab.spacy")
+    print("DONE")
         
         
         ##DEBUG PRINTS -- Weird stuff with spans...
@@ -211,39 +212,4 @@ def tokenize(path,ann_path):
            # i+=1
 
 ##TODO: modify for use on multiple docs... after pipeline is fixed
-def entity_labeling(docbin_path,vocab_path, ann_path):
-    doc_bin = DocBin().from_disk(docbin_path)
-    vocab = Vocab().from_disk(vocab_path)
-    docs = list(doc_bin.get_docs(vocab))
-    print(docs[0].user_data)
-    new_docbin =  DocBin(attrs=["LEMMA", "ENT_IOB", "ENT_TYPE"], store_user_data=True)
-    for d in docs:
-        d.user_data["ents"] = []
-        for token in d:
-            d.user_data["ents"].append(["Other"])
-        print(len(d.user_data["ents"]))
-        exit()
-
-
-        with open(ann_path, "r") as f:
-            lines = f.read().split("\n")
-            for l in lines:
-                if l.startswith("T"):
-                    entity = l.split("\t")[1].split(" ")[0]
-                    start_span = int(l.split("\t")[1].split(" ")[1])
-                    end_span = int(l.split("\t")[1].split(" ")[2])
-                    for i in range(len(d.user_data["spans"])):
-                        spacy_span = d.user_data["spans"][i]
-                        if spacy_span[0] <= start_span and spacy_span[1]>= end_span:
-                            labels = []
-                            
-                            for j in range(len(d.user_data["subwords"][i])):
-                                if j == 0:
-                                    labels.append("B-"+entity)
-                                else:
-                                    labels.append("I-"+entity)
-                            d.user_data["ents"][i]=labels
-                            break
-        new_docbin.add(d)
-    doc_bin.to_disk("BELIS/datasets/n2c2_100035_labeled_subwords.spacy")
 
