@@ -9,7 +9,7 @@ import numpy as np
 
 def k_mean_cluster(docs):
     embeddings = []
-    for doc in docbin:
+    for doc in docs:
         for j in range(len(doc.user_data["subword_embeddings"])):
             for i in range(len(doc.user_data["ents"][j])):
                 if(len(doc.user_data["ents"][j])!=1):
@@ -22,15 +22,34 @@ def nearest_centroid_classifier(docs):
     y = []
     subword_labels = []
     for doc in docs:
+
         for i in range(len(doc.user_data["subword_embeddings"])):
             for j in range(len(doc.user_data["subword_embeddings"][i])):
                 X.append(doc.user_data["subword_embeddings"][i][j])
+
                 subword_labels.append(doc.user_data["ents"][i][j].split("-")[1])
     label_mapping = {"Drug":1, "Reason":2, "Route":3,"Form":4,"ADE":5, "Duration":6, "Strength":7,"Dosage":8,"Frequency":9,"Other":0}
     for label in subword_labels:
         y.append(label_mapping[label])
-    clf = NearestCentroid()
-    cv = StratifiedKFold(shuffle=True) #default is 5 splits
-    scoring = ['precision_macro','recall_macro','f1_macro']
-    scores = cross_validate(clf, X, y, cv=cv,scoring=scoring )
-    print(scores)
+    # clf = NearestCentroid()
+    # cv = StratifiedKFold(shuffle=True) #default is 5 splits
+    # scoring = ['precision_macro','recall_macro','f1_macro']
+    # scores = cross_validate(clf, X, y, cv=cv,scoring=scoring )
+    # print(scores)
+    cv = StratifiedKFold(shuffle=True, n_splits=5)
+
+    for train, test in cv.split(X,y):
+        X_train = []
+        X_test = []
+        y_train = []
+        y_test = []
+        print(train)
+        print(test)
+        for i in range(len(train)):
+            X_train.append(X[train[i]])
+            y_train.append(y[train[i]])
+        for i in range(len(test)):
+            X_test.append(X[test[i]])
+            y_test.append(y[test[i]])
+        # X_train, X_test = X[train], X[test]
+        # y_train, y_test = y[train], y[test]
