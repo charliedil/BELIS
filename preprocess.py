@@ -43,6 +43,7 @@ def tokenize(path):
 
 
             doc.user_data = {}
+            doc.user_data["filename"] = file
             doc.user_data["subwords"] = []
             doc.user_data["subword_embeddings"] = []
             doc.user_data["spans"] = []
