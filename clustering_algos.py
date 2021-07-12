@@ -28,7 +28,7 @@ def nearest_centroid_classifier(docs):
                 X.append(doc.user_data["subword_embeddings"][i][j])
 
                 y.append(doc.user_data["ents"][i][j].split("-")[1])
-    labels = {"Drug", "Reason", "Route","Form","ADE", "Duration", "Strength","Dosage","Frequency","Other"}
+
 
     # clf = NearestCentroid()
     # cv = StratifiedKFold(shuffle=True) #default is 5 splits
@@ -36,8 +36,10 @@ def nearest_centroid_classifier(docs):
     # scores = cross_validate(clf, X, y, cv=cv,scoring=scoring )
     # print(scores)
     cv = StratifiedKFold(shuffle=True, n_splits=5)
-
+    iter = 1
     for train, test in cv.split(X,y):
+        print("CROSS EVAL ITER: "+str(iter))
+        iter+=1
         X_train = []
         X_test = []
         y_train = []
@@ -52,17 +54,33 @@ def nearest_centroid_classifier(docs):
         kmeans = KMeans(n_clusters=10, random_state=0).fit(X_train)
         label_dist = {}
         label_mapping = {}
-        print(len(kmeans.labels_))
-        print(len(X_train))
-        print(len(y_train))
+        labels = {"Other":0, "Drug":0, "Reason":0, "Route":0, "Form":0, "ADE":0, "Duration":0, "Strength":0, "Dosage":0, "Frequency":0}
         for i in range(len(kmeans.labels_)):
+            labels[y_train[i]] +=1
             if kmeans.labels_[i] not in label_dist:
                 label_dist[kmeans.labels_[i]] = {}
             if y_train[i] not in label_dist[kmeans.labels_[i]]:
                 label_dist[kmeans.labels_[i]][y_train[i]] = 0
-            label_dist[kmeans.labels_[i][y_train[i]]] +=1
-        for i in range(10):
-            for label in label_dist[i]
+            label_dist[kmeans.labels_[i]][y_train[i]] +=1
+        labels_sorted = dict(sorted(labels.items(), key=lambda item: item[1], reverse=True))
+        for label in labels_sorted:
+            max_centroid = -1
+            max_value = 0
+            for i in range(10):
+                if label in label_dist[i] and label_dist[i][label]> max_value and i not in label_mapping:
+                    max_value = label_dist[i][label]
+                    max_centroid = i
+            label_mapping[max_centroid] = label
+        false_positives = {}
+        true_positives = {}
+        false_negatives = {}
+        true_negatives = {}
+
+
+
+
+
+
 
 
 
