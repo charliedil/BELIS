@@ -80,8 +80,8 @@ def draw(path):
  #   print(data)
     i=0
     fit = umap.UMAP(n_neighbors=10)
-    color_map = {"Drug":"palevioletred", "Reason":"plum", "Route":"mediumpurple","Form":"skyblue","ADE":"mediumseagreen", "Duration":"blue", "Strength":"orange","Dosage":"brown","Frequency":"gray","Other":"yellow"}
-    color_map2 = {0:"palevioletred", 1:"plum", 2:"mediumpurple",3:"skyblue",4:"mediumseagreen", 5:"blue", 6:"orange",7:"brown",8:"gray", 9:"yellow"}
+    color_map = {"Drug":"palevioletred", "Reason":"plum", "Route":"mediumpurple","Form":"skyblue","ADE":"mediumseagreen", "Duration":"blue", "Strength":"orange","Dosage":"brown","Frequency":"gray"}#,"Other":"yellow"}
+    color_map2 = {0:"palevioletred", 1:"plum", 2:"mediumpurple",3:"skyblue",4:"mediumseagreen", 5:"blue", 6:"orange",7:"brown",8:"gray"}#, 9:"yellow"}
     colors = []
     colors2 = []
     filtered_embeddings = []

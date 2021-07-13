@@ -39,7 +39,7 @@ else:
     vocab = Vocab().from_disk(vocab_path)
     docs = list(doc_bin.get_docs(vocab))
     nearest_centroid_classifier(docs)
-    #draw("C:/Users/nehav/Desktop/n2c2_100035_labeled_subwords_real.spacy")
+    draw("C:/Users/nehav/Desktop/n2c2_100035_labeled_subwords_real.spacy")
     #print("Testing load capabilities: \nTODO: Modularize this code in separate cluster_algo file")
 
     #test_load_docbin("BELIS/datasets/n2c2_100035.spacy", "BELIS/datasets/n2c2_100035_vocab.spacy")
