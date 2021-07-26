@@ -4,16 +4,10 @@ from spacy.vocab import Vocab
 from sklearn.cluster import KMeans
 from sklearn.neighbors import NearestCentroid
 from sklearn.model_selection import  cross_validate, StratifiedKFold
-import numpy as np
+import numpy as npZ
 
 
-def k_mean_cluster(doc):
-    embeddings = []
-
-    for j in range(len(doc.user_data["subword_embeddings"])):
-        for i in range(len(doc.user_data["ents"][j])):
-            if(len(doc.user_data["ents"][j])!=1):
-                embeddings.append(doc.user_data["subword_embeddings"][j][i])
+def k_mean_cluster(embeddings):
     kmeans = KMeans(n_clusters=9, random_state=0).fit(embeddings)
     return kmeans.labels_
 

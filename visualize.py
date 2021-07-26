@@ -11,13 +11,17 @@ from spacy.vocab import Vocab
 from clustering_algos import k_mean_cluster
 import umap
 
-def get_entity_embeddings_and_labels(doc):
+def get_word_embeddings_and_labels(doc):
     embeddings = []
     entity_labels = []
-    for j in range(len(doc.user_data["subwords"])):
-        embeddings.append(np.mean(doc.user_data["subword_embeddings"][j], axis=0))
+
+    for j in range(len(doc.user_data["subword_embeddings"])):
         if len(doc.user_data["ents"][j]) > 0:
+
+            embeddings.append(np.mean(doc.user_data["subword_embeddings"][j], axis=0))
             entity_labels.append(doc.user_data["ents"][j][0].split("-")[1])
+            assert (len(np.mean(doc.user_data["subword_embeddings"][j], axis=0)) ==768)
+
 
     return embeddings, entity_labels
 
@@ -85,8 +89,8 @@ def draw_word_level(path):
     doc_bin = DocBin().from_disk(path)
     vocab = Vocab().from_disk("C:/Users/nehav/Desktop/n2c2_100035_vocab.spacy")
     docs = list(doc_bin.get_docs(vocab))
-    embeddings, labels = get_entity_embeddings_and_labels(docs[0])
-    k_cluster_labels = k_mean_cluster(docs[0])
+    embeddings, labels = get_word_embeddings_and_labels(docs[0])
+    k_cluster_labels = k_mean_cluster(embeddings)
     entity_label_to_embedding_mapping = map_embedding_to_entity(embeddings, labels)
     for key in entity_label_to_embedding_mapping:
         print(key+": "+str(len(entity_label_to_embedding_mapping[key])))
