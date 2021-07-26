@@ -85,6 +85,9 @@ def draw(path):
 
     plt.scatter(u[:, 0], u[:, 1], c=colors2)
     plt.show()
+def reorder(embeddings, labels):
+    ##something something
+    print("Write code here")
 def draw_word_level(path):
     doc_bin = DocBin().from_disk(path)
     vocab = Vocab().from_disk("C:/Users/nehav/Desktop/n2c2_100035_vocab.spacy")
@@ -99,9 +102,10 @@ def draw_word_level(path):
  #   print(data)
     i=0
     fit = umap.UMAP(n_neighbors=10)
-    color_map = {"Drug":"palevioletred", "Reason":"plum", "Route":"mediumpurple","Form":"skyblue","ADE":"mediumseagreen", "Duration":"blue", "Strength":"orange","Dosage":"brown","Frequency":"gray"}#,"Other":"yellow"}
-    color_map2 = {0:"palevioletred", 1:"plum", 2:"mediumpurple",3:"skyblue",4:"mediumseagreen", 5:"blue", 6:"orange",7:"brown",8:"gray"}#, 9:"yellow"}
+    color_map = {"Drug":"palevioletred", "Reason":"plum", "Route":"mediumpurple","Form":"skyblue","ADE":"mediumseagreen", "Duration":"blue", "Strength":"orange","Dosage":"brown","Frequency":"gray","Other":"yellow"}
+    color_map2 = {0:"palevioletred", 1:"plum", 2:"mediumpurple",3:"skyblue",4:"mediumseagreen", 5:"blue", 6:"orange",7:"brown",8:"gray", 9:"yellow"}
     colors = []
+    opacity = []
     colors2 = []
     filtered_embeddings = []
     for i in range(len(labels)):
@@ -109,9 +113,13 @@ def draw_word_level(path):
             colors.append(color_map[labels[i]])
             filtered_embeddings.append(embeddings[i])
             colors2.append(color_map2[k_cluster_labels[i]])
+            if labels[i] == "Other":
+                opacity.append(.25)
+            else:
+                opacity.append(1.0)
 
     u = fit.fit_transform(filtered_embeddings)
-    plt.scatter(u[:, 0], u[:, 1], c=colors)
+    plt.scatter(u[:, 0], u[:, 1], c=colors, alpha=opacity)
 
     plt.show()
 
