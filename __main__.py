@@ -5,7 +5,7 @@ from spacy.tokens import DocBin
 from spacy.vocab import Vocab
 from preprocess import tokenize
 from test import test_load_docbin
-from visualize import draw
+#from visualize import draw
 from visualize import draw_word_level
 from clustering_algos import nearest_centroid_classifier
 parser = argparse.ArgumentParser(description="Run BELIS")

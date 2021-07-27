@@ -4,11 +4,24 @@ from spacy.vocab import Vocab
 from sklearn.cluster import KMeans
 from sklearn.neighbors import NearestCentroid
 from sklearn.model_selection import  cross_validate, StratifiedKFold
-import numpy as npZ
+import numpy as np
 
+def get_word_embeddings_and_labels(doc):
+    embeddings = []
+    entity_labels = []
+
+    for j in range(len(doc.user_data["subword_embeddings"])):
+        if len(doc.user_data["ents"][j]) > 0:
+
+            embeddings.append(np.mean(doc.user_data["subword_embeddings"][j], axis=0))
+            entity_labels.append(doc.user_data["ents"][j][0].split("-")[1])
+            assert (len(np.mean(doc.user_data["subword_embeddings"][j], axis=0)) ==768)
+
+
+    return embeddings, entity_labels
 
 def k_mean_cluster(embeddings):
-    kmeans = KMeans(n_clusters=9, random_state=0).fit(embeddings)
+    kmeans = KMeans(n_clusters=10, random_state=0).fit(embeddings)
     return kmeans.labels_
 
 def nearest_centroid_classifier(docs):
@@ -16,12 +29,10 @@ def nearest_centroid_classifier(docs):
     y = []
 
     for doc in docs:
-
-        for i in range(len(doc.user_data["subword_embeddings"])):
-            for j in range(len(doc.user_data["subword_embeddings"][i])):
-                X.append(doc.user_data["subword_embeddings"][i][j])
-
-                y.append(doc.user_data["ents"][i][j].split("-")[1])
+        doc_embeddings, doc_labels = get_word_embeddings_and_labels(doc)
+        for i in range(len(doc_embeddings)):
+            X.append(doc_embeddings[i])
+            y.append(doc_labels[i])
 
 
     # clf = NearestCentroid()
