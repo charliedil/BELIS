@@ -115,7 +115,7 @@ def draw_word_level(path):
  #   print(data)
     i=0
     fit = umap.UMAP(n_neighbors=10)
-    color_map = {"Drug":"palevioletred", "Reason":"plum", "Route":"mediumpurple","Form":"skyblue","ADE":"mediumseagreen", "Duration":"blue", "Strength":"orange","Dosage":"brown","Frequency":"yellow","Other":"gray"}
+    color_map = {"Drug":"palevioletred", "Reason":"plum", "Route":"mediumpurple","Form":"skyblue","ADE":"mediumseagreen", "Duration":"blue", "Strength":"orange","Dosage":"brown","Frequency":"yellow","Other":"lightgray"}
     color_map2 = {0:"palevioletred", 1:"plum", 2:"mediumpurple",3:"skyblue",4:"mediumseagreen", 5:"blue", 6:"orange",7:"brown",8:"gray", 9:"yellow"}
     colors = []
     opacity = []
@@ -134,7 +134,16 @@ def draw_word_level(path):
     u = fit.fit_transform(filtered_embeddings)
     plt.scatter(u[:, 0], u[:, 1], c=colors, alpha=opacity)
 
+    ax = plt.gca()
+    ax.axes.xaxis.set_ticklabels([])
+    ax.axes.yaxis.set_ticklabels([])
+    plt.grid(True)
     plt.show()
 
+
     plt.scatter(u[:, 0], u[:, 1], c=colors2)
+    ax = plt.gca()
+    ax.axes.xaxis.set_ticklabels([])
+    ax.axes.yaxis.set_ticklabels([])
+    plt.grid(True)
     plt.show()
