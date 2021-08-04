@@ -12,6 +12,11 @@ from spacy.vocab import Vocab
 from clustering_algos import k_mean_cluster
 import umap
 
+def get_entity_embeddings_and_labels(doc): #exclude other
+    embeddings = []
+    entity_labels = []
+    for j in range()
+
 def get_word_embeddings_and_labels(doc):
     embeddings = []
     entity_labels = []

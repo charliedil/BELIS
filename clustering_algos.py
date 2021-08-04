@@ -21,7 +21,7 @@ def get_word_embeddings_and_labels(doc):
     return embeddings, entity_labels
 
 def k_mean_cluster(embeddings):
-    kmeans = KMeans(n_clusters=10, random_state=0).fit(embeddings)
+    kmeans = KMeans(n_clusters=10 , random_state=0).fit(embeddings)
     return kmeans.labels_
 
 def nearest_centroid_classifier(docs):
