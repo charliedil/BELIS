@@ -5,6 +5,7 @@ from spacy.tokens import DocBin
 from spacy.vocab import Vocab
 from preprocess import tokenize
 from test import test_load_docbin
+
 parser = argparse.ArgumentParser(description="Run BELIS")
 parser.add_argument("--preprocess", help="Initiate tokenization preprocessing", action="store_true")
 parser.add_argument("--torch_dataset", help="Path to torch dataset file. Required if --preprocess is not true.")
@@ -16,19 +17,19 @@ td_path = args.torch_dataset
 raw_files = args.raw_files
 threads = args.threads
 print(os.getcwd())
-#Error handling.
+# Error handling.
 if preprocess and raw_files == None:
     print("Error: No argument specified for raw_files, which is required for preprocess=True")
     exit()
-elif preprocess!=True and td_path == None:
+elif preprocess != True and td_path == None:
     print("Error: No argument specified for torch_dataset, which is required for preprocess=False")
     exit()
 
-if preprocess: #write actuall preprocessing code here
+if preprocess:  # write actuall preprocessing code here
     if raw_files.endswith("/") == False:
-         raw_files += "/"
+        raw_files += "/"
     tokenize(raw_files)
 else:
     print("Testing load capabilities: \nTODO: Modularize this code in separate cluster_algo file")
-    
+
     test_load_docbin("BELIS/datasets/n2c2_100035.spacy", "BELIS/datasets/n2c2_100035_vocab.spacy")
