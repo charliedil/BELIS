@@ -15,7 +15,39 @@ import umap
 def get_entity_embeddings_and_labels(doc): #exclude other
     embeddings = []
     entity_labels = []
-    for j in range()
+    prev = False
+    temp_entity_subword_embeddings = []
+    temp_label = ""
+    for j in range(len(doc.user_data["subword_embeddings"])):
+        if len(doc.user_data["ents"][j]) > 0:
+            if doc.user_data["ents"][j].split("-")[1] == "Other":
+                if prev==True:
+                    embeddings.append(np.mean(temp_entity_subword_embeddings, axis=0))
+                    entity_labels.append(temp_label)
+                    temp_entity_subword_embeddings = []
+                    temp_label = ""
+                    prev=False
+            else:
+                if prev==True:
+                    if temp_label == doc.user_data["ents"][j].split("-")[1]:
+                        for subword_embedding in doc.user_data["subword_embeddings"][j]:
+                            temp_entity_subword_embeddings.append(subword_embedding)
+                    else:
+                        embeddings.append(np.mean(temp_entity_subword_embeddings, axis=0))
+                        entity_labels.append(temp_label)
+                        temp_entity_subword_embeddings = []
+                        for subword_embedding in doc.user_data["subword_embeddings"][j]:
+                            temp_entity_subword_embeddings.append(subword_embedding)
+                        temp_label = doc.user_data["ents"][j].split("-")[1]
+                else:
+                    for subword_embedding in doc.user_data["subword_embeddings"][j]:
+                        temp_entity_subword_embeddings.append(subword_embedding)
+                    temp_label = doc.user_data["ents"][j].split("-")[1]
+                    prev=True
+    return embeddings, entity_labels
+
+
+
 
 def get_word_embeddings_and_labels(doc):
     embeddings = []
