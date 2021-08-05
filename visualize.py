@@ -18,9 +18,10 @@ def get_entity_embeddings_and_labels(doc): #exclude other
     prev = False
     temp_entity_subword_embeddings = []
     temp_label = ""
+
     for j in range(len(doc.user_data["subword_embeddings"])):
         if len(doc.user_data["ents"][j]) > 0:
-            if doc.user_data["ents"][j].split("-")[1] == "Other":
+            if doc.user_data["ents"][j][0].split("-")[1] == "Other":
                 if prev==True:
                     embeddings.append(np.mean(temp_entity_subword_embeddings, axis=0))
                     entity_labels.append(temp_label)
@@ -29,7 +30,7 @@ def get_entity_embeddings_and_labels(doc): #exclude other
                     prev=False
             else:
                 if prev==True:
-                    if temp_label == doc.user_data["ents"][j].split("-")[1]:
+                    if temp_label == doc.user_data["ents"][j][0].split("-")[1]:
                         for subword_embedding in doc.user_data["subword_embeddings"][j]:
                             temp_entity_subword_embeddings.append(subword_embedding)
                     else:
@@ -38,14 +39,13 @@ def get_entity_embeddings_and_labels(doc): #exclude other
                         temp_entity_subword_embeddings = []
                         for subword_embedding in doc.user_data["subword_embeddings"][j]:
                             temp_entity_subword_embeddings.append(subword_embedding)
-                        temp_label = doc.user_data["ents"][j].split("-")[1]
+                        temp_label = doc.user_data["ents"][j][0].split("-")[1]
                 else:
                     for subword_embedding in doc.user_data["subword_embeddings"][j]:
                         temp_entity_subword_embeddings.append(subword_embedding)
-                    temp_label = doc.user_data["ents"][j].split("-")[1]
+                    temp_label = doc.user_data["ents"][j][0].split("-")[1]
                     prev=True
     return embeddings, entity_labels
-
 
 
 
@@ -142,7 +142,7 @@ def draw_word_level(path):
     doc_bin = DocBin().from_disk(path)
     vocab = Vocab().from_disk("C:/Users/nehav/Desktop/n2c2_100035_vocab.spacy")
     docs = list(doc_bin.get_docs(vocab))
-    embeddings, labels = get_word_embeddings_and_labels(docs[0])
+    embeddings, labels = get_entity_embeddings_and_labels(docs[0]) ##depending on which level of embeddings you want, change this!!
     ordered_embeddings, ordered_labels = reorder(embeddings, labels, "Other")
     k_cluster_labels = k_mean_cluster(ordered_embeddings)
     entity_label_to_embedding_mapping = map_embedding_to_entity(ordered_embeddings, ordered_labels)
@@ -154,7 +154,7 @@ def draw_word_level(path):
     i=0
     fit = umap.UMAP(n_neighbors=10)
     color_map = {"Drug":"palevioletred", "Reason":"plum", "Route":"mediumpurple","Form":"skyblue","ADE":"mediumseagreen", "Duration":"blue", "Strength":"orange","Dosage":"brown","Frequency":"yellow","Other":"lightgray"}
-    color_map2 = {0:"palevioletred", 1:"plum", 2:"mediumpurple",3:"skyblue",4:"mediumseagreen", 5:"blue", 6:"orange",7:"brown",8:"gray", 9:"yellow"}
+    color_map2 = {0:"palevioletred", 1:"plum", 2:"mediumpurple",3:"skyblue",4:"mediumseagreen", 5:"blue", 6:"orange",7:"brown",8:"gray"}#, 9:"yellow"}
     colors = []
     opacity = []
     colors2 = []

@@ -19,17 +19,51 @@ def get_word_embeddings_and_labels(doc):
 
 
     return embeddings, entity_labels
+def get_entity_embeddings_and_labels(doc): #exclude other
+    embeddings = []
+    entity_labels = []
+    prev = False
+    temp_entity_subword_embeddings = []
+    temp_label = ""
+
+    for j in range(len(doc.user_data["subword_embeddings"])):
+        if len(doc.user_data["ents"][j]) > 0:
+            if doc.user_data["ents"][j][0].split("-")[1] == "Other":
+                if prev==True:
+                    embeddings.append(np.mean(temp_entity_subword_embeddings, axis=0))
+                    entity_labels.append(temp_label)
+                    temp_entity_subword_embeddings = []
+                    temp_label = ""
+                    prev=False
+            else:
+                if prev==True:
+                    if temp_label == doc.user_data["ents"][j][0].split("-")[1]:
+                        for subword_embedding in doc.user_data["subword_embeddings"][j]:
+                            temp_entity_subword_embeddings.append(subword_embedding)
+                    else:
+                        embeddings.append(np.mean(temp_entity_subword_embeddings, axis=0))
+                        entity_labels.append(temp_label)
+                        temp_entity_subword_embeddings = []
+                        for subword_embedding in doc.user_data["subword_embeddings"][j]:
+                            temp_entity_subword_embeddings.append(subword_embedding)
+                        temp_label = doc.user_data["ents"][j][0].split("-")[1]
+                else:
+                    for subword_embedding in doc.user_data["subword_embeddings"][j]:
+                        temp_entity_subword_embeddings.append(subword_embedding)
+                    temp_label = doc.user_data["ents"][j][0].split("-")[1]
+                    prev=True
+    return embeddings, entity_labels
 
 def k_mean_cluster(embeddings):
-    kmeans = KMeans(n_clusters=10 , random_state=0).fit(embeddings)
+    kmeans = KMeans(n_clusters=9, random_state=0).fit(embeddings) ##9 without other, 10 with...
     return kmeans.labels_
 
-def nearest_centroid_classifier(docs):
+def nearest_centroid_classifier(docs): ##ADJUST NUMBERS TO 10 WHEN WITH OTHER, 9 WITHOUT
     X = []
     y = []
 
     for doc in docs:
-        doc_embeddings, doc_labels = get_word_embeddings_and_labels(doc)
+        doc_embeddings, doc_labels = get_entity_embeddings_and_labels(doc) ##change depending on the level of embeddings
         for i in range(len(doc_embeddings)):
             X.append(doc_embeddings[i])
             y.append(doc_labels[i])
@@ -56,10 +90,10 @@ def nearest_centroid_classifier(docs):
         for i in range(len(test)):
             X_test.append(X[test[i]])
             y_test.append(y[test[i]])
-        kmeans = KMeans(n_clusters=10, random_state=0).fit(X_train)
+        kmeans = KMeans(n_clusters=9, random_state=0).fit(X_train)
         label_dist = {}
         label_mapping = {}
-        labels = {"Other":0, "Drug":0, "Reason":0, "Route":0, "Form":0, "ADE":0, "Duration":0, "Strength":0, "Dosage":0, "Frequency":0}
+        labels = {"Drug":0, "Reason":0, "Route":0, "Form":0, "ADE":0, "Duration":0, "Strength":0, "Dosage":0, "Frequency":0}#, "Other":0}
         for i in range(len(kmeans.labels_)):
             labels[y_train[i]] +=1
             if kmeans.labels_[i] not in label_dist:
@@ -72,13 +106,13 @@ def nearest_centroid_classifier(docs):
         for label in labels_sorted:
             max_centroid = -1
             max_value = 0
-            for i in range(10):
+            for i in range(9):
                 if label in label_dist[i] and label_dist[i][label]>= max_value and i not in label_mapping:
                     max_value = label_dist[i][label]
                     max_centroid = i
             if max_centroid!=-1:
                 label_mapping[max_centroid] = label
-        for i in range(10):
+        for i in range(9):
             if i not in label_mapping:
                 for label in labels_sorted:
                     if label not in list(label_mapping.values()):
@@ -119,9 +153,9 @@ def nearest_centroid_classifier(docs):
             recall_temp += true_positives[label]/(false_negatives[label]+true_positives[label])
             f1_temp += true_positives[label]/(true_positives[label]+.5*false_positives[label]+.5*false_negatives[label])
         print("OVERALL -------------------------")
-        print("Precision: "+str(precision_temp/10))
-        print("Recall: "+str(recall_temp/10))
-        print("F1: "+str(f1_temp/10))
+        print("Precision: "+str(precision_temp/9))
+        print("Recall: "+str(recall_temp/9))
+        print("F1: "+str(f1_temp/9))
 
 
 
