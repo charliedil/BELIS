@@ -64,7 +64,6 @@ def tokenize(path):
 
             for token in doc:
                 doc.user_data["spans"].append((token.idx, len(token.text) + token.idx))
-                bert_token = tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))
                 while (j < bert_tokens.input_ids.size()[0] and int(bert_tokens.input_ids[j][i]) == 102):
                     i = 1
                     j += 1
@@ -102,61 +101,63 @@ def tokenize(path):
                         subword_spans.append((int(bert_offsets[j][i][0]) + prev_idx,
                                               int(bert_offsets[j][i][1]) + int(bert_offsets[j][i][0]) + prev_idx))
                     i += 1
-                    bert_token = tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))
-                    temp = "" + subwords[0].lower() + subwords[1].lower()
-                    if temp.replace("##", "").lower() == prev.lower():
-                        finished = True
-                    while (token.text.lower().startswith(
-                            tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))) == False and (
-                                   tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i])).startswith(
+                    if i < bert_tokens.input_ids[j].size()[0]:
+                        print(bert_tokens.input_ids[j].size()[0])
+                        bert_token = tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))
+                        temp = "" + subwords[0].lower() + subwords[1].lower()
+                        if temp.replace("##", "").lower() == prev.lower():
+                            finished = True
+                        while (token.text.lower().startswith(
+                                tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))) == False and (
+                                    tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i])).startswith(
                                            "##") or finished == False)):
-                        subwords.append(tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i])))
-                        subword_embeddings.append(bert_outputs[j][i].detach().numpy())
-                        if tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i])).startswith("##"):
-                            subword_spans.append((int(bert_offsets[j][i][0]) + prev_idx,
+                            subwords.append(tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i])))
+                            subword_embeddings.append(bert_outputs[j][i].detach().numpy())
+                            if tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i])).startswith("##"):
+                                subword_spans.append((int(bert_offsets[j][i][0]) + prev_idx,
                                                   int(bert_offsets[j][i][1]) + int(
                                                       bert_offsets[j][i][0]) + prev_idx - 3))
-                        else:
-                            subword_spans.append((int(bert_offsets[j][i][0]) + prev_idx,
+                            else:
+                                subword_spans.append((int(bert_offsets[j][i][0]) + prev_idx,
                                                   int(bert_offsets[j][i][1]) + int(bert_offsets[j][i][0]) + prev_idx))
-                        i += 1
-                        #bert_token = tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))
-                        temp += subwords[len(subwords) - 1].lower()
-                        if prev.lower() == temp or prev.lower() == temp.lower().replace("##", ""):
-                            finished = True
-                    finished = True
-                    while (j < bert_tokens.input_ids.size()[0] and int(bert_tokens.input_ids[j][i]) == 102):
-                        i = 1
-                        j += 1
-                        bert_token = tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))
-                    if token.text.lower().startswith(tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))):
-                        if token.text.lower() != tokenizer.convert_ids_to_tokens(
+                            i += 1
+                            #bert_token = tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))
+                            temp += subwords[len(subwords) - 1].lower()
+                            if prev.lower() == temp or prev.lower() == temp.lower().replace("##", ""):
+                                finished = True
+                        finished = True
+                        while (j < bert_tokens.input_ids.size()[0] and int(bert_tokens.input_ids[j][i]) == 102):
+                            i = 1
+                            j += 1
+                            bert_token = tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))
+                        if token.text.lower().startswith(tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))):
+                            if token.text.lower() != tokenizer.convert_ids_to_tokens(
                                 int(bert_tokens.input_ids[j][i])).lower():
-                            finished = False
+                                finished = False
+                            else:
+                                finished = True
+                            if first == False:
+                                doc.user_data["subwords"].append(subwords)
+                                doc.user_data["subword_embeddings"].append(subword_embeddings)
+                                doc.user_data["subword_spans"].append(subword_spans)
+                                subwords = []
+                                subword_embeddings = []
+                                subword_spans = []
+                            subwords.append(tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i])))
+                            subword_embeddings.append(bert_outputs[j][i].detach().numpy())
+                            subword_spans.append((int(bert_offsets[j][i][0]) + token.idx,
+                                              int(bert_offsets[j][i][1]) + int(bert_offsets[j][i][0]) + token.idx))
                         else:
-                            finished = True
-                        if first == False:
                             doc.user_data["subwords"].append(subwords)
                             doc.user_data["subword_embeddings"].append(subword_embeddings)
                             doc.user_data["subword_spans"].append(subword_spans)
                             subwords = []
                             subword_embeddings = []
                             subword_spans = []
-                        subwords.append(tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i])))
-                        subword_embeddings.append(bert_outputs[j][i].detach().numpy())
-                        subword_spans.append((int(bert_offsets[j][i][0]) + token.idx,
-                                              int(bert_offsets[j][i][1]) + int(bert_offsets[j][i][0]) + token.idx))
-                    else:
-                        doc.user_data["subwords"].append(subwords)
-                        doc.user_data["subword_embeddings"].append(subword_embeddings)
-                        doc.user_data["subword_spans"].append(subword_spans)
-                        subwords = []
-                        subword_embeddings = []
-                        subword_spans = []
 
-                        i -= 1
-                        bert_token = tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))
-                else:
+                            i -= 1
+                            bert_token = tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))
+                else: #HERE
                     doc.user_data["subwords"].append(subwords)
                     doc.user_data["subword_embeddings"].append(subword_embeddings)
                     doc.user_data["subword_spans"].append(subword_spans)
