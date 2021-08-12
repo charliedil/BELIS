@@ -11,9 +11,8 @@ def tokenize(path):
     nlp = spacy.load("en_core_web_sm")
     doc_bin = DocBin(attrs=["LEMMA", "ENT_IOB", "ENT_TYPE"], store_user_data=True) #where we will append the doc files to.
     for file in os.listdir(path):
-        if file.endswith(".txt"):
-            if file == "100564.txt":
-                print("CHeckpoint")
+        if file.endswith(".txt") and file != "102365.txt":
+            print(file)
             text = ""
             with open(path + file, "r") as f:
                 text = f.read()
@@ -200,8 +199,9 @@ def tokenize(path):
                         start_span = 0
                         end_span=0
                         if ";" in l.split("\t")[1]:
+                            print(l)
                             start_span = int(l.split("\t")[1].split(" ")[1])
-                            end_span = int(l.split("\t")[1].split(" ")[3])
+                            end_span = int(l.split("\t")[1].split(" ")[len(l.split("\t")[1].split(" "))-1])
                         else:
                             start_span = int(l.split("\t")[1].split(" ")[1])
                             end_span = int(l.split("\t")[1].split(" ")[2])
