@@ -6,21 +6,23 @@ from spacy.tokens import DocBin
 from spacy.vocab import Vocab
 from transformers import AutoTokenizer, AutoModel
 
-
+#Method for tokenizing txt files within path provided
 def tokenize(path):
     nlp = spacy.load("en_core_web_sm")
-    doc_bin = DocBin(attrs=["LEMMA", "ENT_IOB", "ENT_TYPE"], store_user_data=True)
+    doc_bin = DocBin(attrs=["LEMMA", "ENT_IOB", "ENT_TYPE"], store_user_data=True) #where we will append the doc files to.
     for file in os.listdir(path):
         if file.endswith(".txt"):
+            if file == "100564.txt":
+                print("CHeckpoint")
             text = ""
             with open(path + file, "r") as f:
                 text = f.read()
-            doc = nlp(text)
+            doc = nlp(text) #pass document text through spacy pipeline
             i = 0
             spacy_tok_sents = []
             sent = []
             first = True
-            for token in doc:
+            for token in doc: ##collect the sentences
                 if first:
                     if token.is_space == False:
                         sent.append(token.text)
@@ -33,8 +35,10 @@ def tokenize(path):
                 else:
                     if token.is_space == False:
                         sent.append(token.text)
-            if len(sent) != 0:
+            if len(sent) != 0: #with the way the code is written, we miss the last sentence, so i had to add this in
                 spacy_tok_sents.append(sent)
+
+            ##BERT tokenizer time
             tokenizer = AutoTokenizer.from_pretrained("emilyalsentzer/Bio_ClinicalBERT")
             model = AutoModel.from_pretrained("emilyalsentzer/Bio_ClinicalBERT")
             bert_offsets = tokenizer(spacy_tok_sents, padding=True, truncation=True, max_length=512,
@@ -47,96 +51,97 @@ def tokenize(path):
 
             doc.user_data = {}
             doc.user_data["filename"] = file
-            doc.user_data["subwords"] = []
-            doc.user_data["subword_embeddings"] = []
-            doc.user_data["spans"] = []
-            doc.user_data["subword_spans"] = []
+            doc.user_data["subwords"] = [] #subwords grouped by the word they are a part of
+            doc.user_data["subword_embeddings"] = [] #embeddings of the subwords, same grouping as previous line
+            doc.user_data["spans"] = [] #spans of the words
+            doc.user_data["subword_spans"] = [] #spans of the subwords, grouped in same way as embeddings
             i = 1
             j = 0
             # for more than one doc, for doc in docs?
-            subwords = []
-            subword_embeddings = []
-            subword_spans = []
-            first = True
-            finished = True
-            prev = ""
+            subwords = [] #temporary array for holding subwords.
+            subword_embeddings = [] #temporary array for holding subword embeddings
+            subword_spans = [] #temporary array for holding subword_spans
+            first = True #idk what this is tbh
+            finished = True #is the word finished?
+            prev = "" #keep track of previous "token"
             tcounter = 0
 
-            for token in doc:
-                doc.user_data["spans"].append((token.idx, len(token.text) + token.idx))
-                while (j < bert_tokens.input_ids.size()[0] and int(bert_tokens.input_ids[j][i]) == 102):
+            for token in doc: #we compare the subtokens to this token
+                doc.user_data["spans"].append((token.idx, len(token.text) + token.idx)) #span of the whole word
+                while (j < bert_tokens.input_ids.size()[0] and int(bert_tokens.input_ids[j][i]) == 102): #when we reach the end of a sentence, move up until a new sentence
                     i = 1
                     j += 1
                     # bert_token = tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))
-                if j == bert_tokens.input_ids.size()[0]:
+                if j == bert_tokens.input_ids.size()[0]: ##we've reached the end of the document. append what we have saved and move on.
                     doc.user_data["subwords"].append(subwords)
                     doc.user_data["subword_embeddings"].append(subword_embeddings)
                     doc.user_data["subword_spans"].append(subword_spans)
                     break
+
                 if token.text.lower().startswith(
-                        tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))) and finished == True:
-                    if token.text.lower() != tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i])).lower():
+                        tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))) and finished == True:#start of new word?
+                    if token.text.lower() != tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i])).lower():#matches only the beginning
                         finished = False
-                    else:
+                    else: #matched the whole word, which means we are good to move on.
                         finished = True
-                    if first == False:
+                    if first == False: #beginning of new word, so whatever we calculated previously must be done.
                         doc.user_data["subwords"].append(subwords)
                         subwords = []
                         doc.user_data["subword_embeddings"].append(subword_embeddings)
                         subword_embeddings = []
                         doc.user_data["subword_spans"].append(subword_spans)
                         subword_spans = []
-                    subwords.append(tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i])))
+                    subwords.append(tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))) ##add on what we have so far
                     subword_embeddings.append(bert_outputs[j][i].detach().numpy())
                     subword_spans.append((int(bert_offsets[j][i][0]) + token.idx,
                                           int(bert_offsets[j][i][1]) + int(bert_offsets[j][i][0]) + token.idx))
-                elif tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i])).startswith(
+                    ##MISSING i+=1??? - no. there is one at the end
+                elif tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i])).startswith( ##is it the next subword?
                         "##") or finished == False:
                     subwords.append(tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i])))
                     subword_embeddings.append(bert_outputs[j][i].detach().numpy())
-                    if tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i])).startswith("##"):
+                    if tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i])).startswith("##"): ##account for the ##s if necessary in spans
                         subword_spans.append((int(bert_offsets[j][i][0]) + prev_idx,
                                               int(bert_offsets[j][i][1]) + int(bert_offsets[j][i][0]) + prev_idx - 3))
                     else:
                         subword_spans.append((int(bert_offsets[j][i][0]) + prev_idx,
                                               int(bert_offsets[j][i][1]) + int(bert_offsets[j][i][0]) + prev_idx))
-                    i += 1
-                    if i < bert_tokens.input_ids[j].size()[0]:
-                        print(bert_tokens.input_ids[j].size()[0])
-                        bert_token = tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))
-                        temp = "" + subwords[0].lower() + subwords[1].lower()
-                        if temp.replace("##", "").lower() == prev.lower():
+                    i += 1## move to next subword
+                    if i < bert_tokens.input_ids[j].size()[0]: ##make sure it is in bounds
+
+                        #bert_token = tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))
+                        temp = "" + subwords[0].lower() + subwords[1].lower() #combining existing subwords
+                        if temp.replace("##", "").lower() == prev.lower(): #are we finished?
                             finished = True
-                        while (token.text.lower().startswith(
-                                tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))) == False and (
-                                    tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i])).startswith(
-                                           "##") or finished == False)):
-                            subwords.append(tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i])))
-                            subword_embeddings.append(bert_outputs[j][i].detach().numpy())
-                            if tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i])).startswith("##"):
+                        while (tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i])).startswith(
+                                           "##") or finished == False):# loop until we finish the word, then we can move on
+                            subwords.append(tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))) ##add the subword
+                            subword_embeddings.append(bert_outputs[j][i].detach().numpy()) #add teh embedding
+                            if tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i])).startswith("##"): #accounting for the ##s in spans
                                 subword_spans.append((int(bert_offsets[j][i][0]) + prev_idx,
                                                   int(bert_offsets[j][i][1]) + int(
                                                       bert_offsets[j][i][0]) + prev_idx - 3))
                             else:
                                 subword_spans.append((int(bert_offsets[j][i][0]) + prev_idx,
                                                   int(bert_offsets[j][i][1]) + int(bert_offsets[j][i][0]) + prev_idx))
-                            i += 1
+                            i += 1#next subword
                             #bert_token = tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))
                             temp += subwords[len(subwords) - 1].lower()
-                            if prev.lower() == temp or prev.lower() == temp.lower().replace("##", ""):
+                            if prev.lower() == temp or prev.lower() == temp.lower().replace("##", ""): ##checking if we're done
                                 finished = True
-                        finished = True
-                        while (j < bert_tokens.input_ids.size()[0] and int(bert_tokens.input_ids[j][i]) == 102):
+                        finished = True #redundant
+
+                        while (j < bert_tokens.input_ids.size()[0] and int(bert_tokens.input_ids[j][i]) == 102): #are we at the end of the sentence
                             i = 1
                             j += 1
-                            bert_token = tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))
-                        if token.text.lower().startswith(tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))):
+                            #bert_token = tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))
+                        if token.text.lower().startswith(tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))): #catch up to current token
                             if token.text.lower() != tokenizer.convert_ids_to_tokens(
-                                int(bert_tokens.input_ids[j][i])).lower():
+                                int(bert_tokens.input_ids[j][i])).lower():#begins but not complete the word
                                 finished = False
                             else:
-                                finished = True
-                            if first == False:
+                                finished = True #subword is the word, so we can move on
+                            if first == False: #this may be redundant - always true
                                 doc.user_data["subwords"].append(subwords)
                                 doc.user_data["subword_embeddings"].append(subword_embeddings)
                                 doc.user_data["subword_spans"].append(subword_spans)
@@ -155,8 +160,8 @@ def tokenize(path):
                             subword_embeddings = []
                             subword_spans = []
 
-                            i -= 1
-                            bert_token = tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))
+                            i -= 1 #whitespace, skip
+                            #bert_token = tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))
                 else: #HERE
                     doc.user_data["subwords"].append(subwords)
                     doc.user_data["subword_embeddings"].append(subword_embeddings)
@@ -164,14 +169,15 @@ def tokenize(path):
                     subwords = []
                     subword_embeddings = []
                     subword_spans = []
-                    finished = True
-                    i -= 1
-                    bert_token = tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))
-                i += 1
-                bert_token = tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))
+                    finished = True #redundant?
+                    i -= 1 #whitespace, skip
+                    #bert_token = tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))
+                i += 1 #move to next token
+                #bert_token = tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))
                 first = False
-                prev = token.text
-                prev_idx = token.idx
+                prev = token.text #save previous in case not finished
+                prev_idx = token.idx #save previous index
+            ##END LOOP
             diff = len(doc) - len(doc.user_data["subwords"])
             for i in range(len(doc) - diff, len(doc)):
                 doc.user_data["subwords"].append([])
