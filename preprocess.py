@@ -1,6 +1,6 @@
 import os
 import pickle
-
+from tqdm import tqdm
 import spacy
 from spacy.tokens import DocBin
 from spacy.vocab import Vocab
@@ -10,9 +10,14 @@ from transformers import AutoTokenizer, AutoModel
 def tokenize(path):
     nlp = spacy.load("en_core_web_sm")
     doc_bin = DocBin(attrs=["LEMMA", "ENT_IOB", "ENT_TYPE"], store_user_data=True) #where we will append the doc files to.
-    for file in os.listdir(path):
-        if file.endswith(".txt") and file != "102365.txt" and file=="119069.txt":
-            print(file)
+    all_files = list(os.listdir(path))
+    txt_files = []
+    for file in all_files:
+        if file.endswith(".txt"):
+            txt_files.append(file)
+    for file in tqdm(txt_files, "Documents parsed"):
+        if file != "102365.txt":
+
             text = ""
             with open(path + file, "r") as f:
                 text = f.read()
@@ -205,7 +210,6 @@ def tokenize(path):
                         start_span = 0
                         end_span=0
                         if ";" in l.split("\t")[1]:
-                            print(l)
                             start_span = int(l.split("\t")[1].split(" ")[1])
                             end_span = int(l.split("\t")[1].split(" ")[len(l.split("\t")[1].split(" "))-1])
                         else:
