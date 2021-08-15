@@ -11,7 +11,7 @@ def tokenize(path):
     nlp = spacy.load("en_core_web_sm")
     doc_bin = DocBin(attrs=["LEMMA", "ENT_IOB", "ENT_TYPE"], store_user_data=True) #where we will append the doc files to.
     for file in os.listdir(path):
-        if file.endswith(".txt") and file != "102365.txt":
+        if file.endswith(".txt") and file != "102365.txt" and file=="119069.txt":
             print(file)
             text = ""
             with open(path + file, "r") as f:
@@ -134,6 +134,12 @@ def tokenize(path):
                             i = 1
                             j += 1
                             #bert_token = tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))
+                        if j == bert_tokens.input_ids.size()[
+                            0]:  ##we've reached the end of the document. append what we have saved and move on.
+                            doc.user_data["subwords"].append(subwords)
+                            doc.user_data["subword_embeddings"].append(subword_embeddings)
+                            doc.user_data["subword_spans"].append(subword_spans)
+                            break
                         if token.text.lower().startswith(tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))): #catch up to current token
                             if token.text.lower() != tokenizer.convert_ids_to_tokens(
                                 int(bert_tokens.input_ids[j][i])).lower():#begins but not complete the word
