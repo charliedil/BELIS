@@ -49,6 +49,7 @@ def get_entity_embeddings_and_labels(doc): #exclude other
                         temp_label = doc.user_data["ents"][j][0].split("-")[1]
                 else:
                     for subword_embedding in doc.user_data["subword_embeddings"][j]:
+
                         temp_entity_subword_embeddings.append(subword_embedding)
                     temp_label = doc.user_data["ents"][j][0].split("-")[1]
                     prev=True

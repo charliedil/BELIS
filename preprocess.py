@@ -16,8 +16,8 @@ def tokenize(path):
         if file.endswith(".txt"):
             txt_files.append(file)
     for file in tqdm(txt_files, "Documents parsed"):
-        if file != "102365.txt":
-
+        if file != "102365.txt" and file != "117745.txt" and file != "120301.txt":
+            print(file)
             text = ""
             with open(path + file, "r") as f:
                 text = f.read()
@@ -51,8 +51,9 @@ def tokenize(path):
 
             bert_tokens = tokenizer(spacy_tok_sents, padding=True, truncation=True, max_length=512,
                                     return_tensors="pt", is_split_into_words=True)
+            model.eval()
+            # bert_outputs = model(**bert_tokens).last_hidden_state.cpu().numpy()
             bert_outputs = model(**bert_tokens).last_hidden_state.detach()
-
             doc.user_data = {}
             doc.user_data["filename"] = file
             doc.user_data["subwords"] = [] #subwords grouped by the word they are a part of
@@ -96,14 +97,14 @@ def tokenize(path):
                         doc.user_data["subword_spans"].append(subword_spans)
                         subword_spans = []
                     subwords.append(tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))) ##add on what we have so far
-                    subword_embeddings.append(bert_outputs[j][i].detach().numpy())
+                    subword_embeddings.append(bert_outputs[j][i].cpu().numpy())
                     subword_spans.append((int(bert_offsets[j][i][0]) + token.idx,
                                           int(bert_offsets[j][i][1]) + int(bert_offsets[j][i][0]) + token.idx))
                     ##MISSING i+=1??? - no. there is one at the end
                 elif tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i])).startswith( ##is it the next subword?
                         "##") or finished == False:
                     subwords.append(tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i])))
-                    subword_embeddings.append(bert_outputs[j][i].detach().numpy())
+                    subword_embeddings.append(bert_outputs[j][i].cpu().numpy())
                     if tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i])).startswith("##"): ##account for the ##s if necessary in spans
                         subword_spans.append((int(bert_offsets[j][i][0]) + prev_idx,
                                               int(bert_offsets[j][i][1]) + int(bert_offsets[j][i][0]) + prev_idx - 3))
@@ -120,7 +121,7 @@ def tokenize(path):
                         while (tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i])).startswith(
                                            "##") or finished == False):# loop until we finish the word, then we can move on
                             subwords.append(tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i]))) ##add the subword
-                            subword_embeddings.append(bert_outputs[j][i].detach().numpy()) #add teh embedding
+                            subword_embeddings.append(bert_outputs[j][i].cpu().numpy()) #add teh embedding
                             if tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i])).startswith("##"): #accounting for the ##s in spans
                                 subword_spans.append((int(bert_offsets[j][i][0]) + prev_idx,
                                                   int(bert_offsets[j][i][1]) + int(
@@ -159,7 +160,7 @@ def tokenize(path):
                                 subword_embeddings = []
                                 subword_spans = []
                             subwords.append(tokenizer.convert_ids_to_tokens(int(bert_tokens.input_ids[j][i])))
-                            subword_embeddings.append(bert_outputs[j][i].detach().numpy())
+                            subword_embeddings.append(bert_outputs[j][i].cpu().numpy())
                             subword_spans.append((int(bert_offsets[j][i][0]) + token.idx,
                                               int(bert_offsets[j][i][1]) + int(bert_offsets[j][i][0]) + token.idx))
                         else:
