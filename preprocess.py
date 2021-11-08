@@ -1,5 +1,4 @@
 import os
-import pickle
 from tqdm import tqdm
 import spacy
 from spacy.tokens import DocBin
