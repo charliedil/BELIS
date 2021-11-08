@@ -1,5 +1,6 @@
 wheel
 https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.2.0/en_core_web_sm-3.2.0.tar.gz
+torch
 blis==0.7.5
 catalogue==2.0.6
 certifi==2021.10.8
