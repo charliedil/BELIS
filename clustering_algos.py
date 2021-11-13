@@ -59,6 +59,8 @@ def k_mean_cluster(embeddings):
     kmeans = KMeans(n_clusters=10, random_state=0).fit(embeddings) ##9 without other, 10 with...
     return kmeans.labels_
 
+
+
 def nearest_centroid_classifier(docs): ##ADJUST NUMBERS TO 10 WHEN WITH OTHER, 9 WITHOUT
     X = []
     y = []

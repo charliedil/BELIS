@@ -6,7 +6,7 @@ from spacy.vocab import Vocab
 from transformers import AutoTokenizer, AutoModel
 
 #Method for tokenizing txt files within path provided
-def tokenize(path):
+def tokenize_with_labels(path, target_spacy_path):
     ##loading models here so it doesn't slow down my program EVEN MORE
     nlp = spacy.load("en_core_web_sm")
     tokenizer = AutoTokenizer.from_pretrained("emilyalsentzer/Bio_ClinicalBERT")
@@ -230,8 +230,9 @@ def tokenize(path):
                                 break
 
             doc_bin.add(doc)
-    doc_bin.to_disk("BELIS/datasets/n2c2_train_labeled.spacy")
-    nlp.vocab.to_disk("BELIS/datasets/n2c2_train_vocab.spacy")
+    doc_bin.to_disk(target_spacy_path+"n2c2_train_labeled.spacy")
+    nlp.vocab.to_disk(target_spacy_path+"n2c2_train_vocab.spacy")
+
     print("DONE")
 
     ##DEBUG PRINTS -- Weird stuff with spans...
