@@ -6,7 +6,7 @@ from spacy.vocab import Vocab
 from transformers import AutoTokenizer, AutoModel
 
 #Method for tokenizing txt files within path provided
-def tokenize_with_labels(path, target_spacy_path):
+def tokenize(path, target_docbin_path, target_vocab_path, inference):
     ##loading models here so it doesn't slow down my program EVEN MORE
     nlp = spacy.load("en_core_web_sm")
     tokenizer = AutoTokenizer.from_pretrained("emilyalsentzer/Bio_ClinicalBERT")
@@ -195,45 +195,47 @@ def tokenize_with_labels(path, target_spacy_path):
                 doc.user_data["subwords"].append([])
                 doc.user_data["subword_embeddings"].append([])
                 doc.user_data["subword_spans"].append([])
-            doc.user_data["ents"] = []
-            for i in range(len(doc.user_data["subwords"])):
-                labels = []
-                for j in range(len(doc.user_data["subwords"][i])):
-                    if j == 0:
-                        labels.append("B-Other")
-                    else:
-                        labels.append("I-Other")
-                doc.user_data["ents"].append(labels)
-            with open(path + file.split(".")[0] + ".ann", "r") as f:
-                lines = f.read().split("\n")
-                for l in lines:
-                    if l.startswith("T"):
-                        entity = l.split("\t")[1].split(" ")[0]
-                        start_span = 0
-                        end_span=0
-                        if ";" in l.split("\t")[1]:
-                            start_span = int(l.split("\t")[1].split(" ")[1])
-                            end_span = int(l.split("\t")[1].split(" ")[len(l.split("\t")[1].split(" "))-1])
+            if not inference:
+                doc.user_data["ents"] = []
+                for i in range(len(doc.user_data["subwords"])):
+                    labels = []
+                    for j in range(len(doc.user_data["subwords"][i])):
+                        if j == 0:
+                            labels.append("B-Other")
                         else:
-                            start_span = int(l.split("\t")[1].split(" ")[1])
-                            end_span = int(l.split("\t")[1].split(" ")[2])
-                        for i in range(len(doc.user_data["spans"])):
-                            spacy_span = doc.user_data["spans"][i]
-                            if spacy_span[0] <= start_span and spacy_span[1] >= end_span:
-                                labels = []
-                                for j in range(len(doc.user_data["subwords"][i])):
-                                    if j == 0:
-                                        labels.append("B-" + entity)
-                                    else:
-                                        labels.append("I-" + entity)
-                                doc.user_data["ents"][i] = labels
-                                break
+                            labels.append("I-Other")
+                    doc.user_data["ents"].append(labels)
+                with open(path + file.split(".")[0] + ".ann", "r") as f:
+                    lines = f.read().split("\n")
+                    for l in lines:
+                        if l.startswith("T"):
+                            entity = l.split("\t")[1].split(" ")[0]
+                            start_span = 0
+                            end_span=0
+                            if ";" in l.split("\t")[1]:
+                                start_span = int(l.split("\t")[1].split(" ")[1])
+                                end_span = int(l.split("\t")[1].split(" ")[len(l.split("\t")[1].split(" "))-1])
+                            else:
+                                start_span = int(l.split("\t")[1].split(" ")[1])
+                                end_span = int(l.split("\t")[1].split(" ")[2])
+                            for i in range(len(doc.user_data["spans"])):
+                                spacy_span = doc.user_data["spans"][i]
+                                if spacy_span[0] <= start_span and spacy_span[1] >= end_span:
+                                    labels = []
+                                    for j in range(len(doc.user_data["subwords"][i])):
+                                        if j == 0:
+                                            labels.append("B-" + entity)
+                                        else:
+                                            labels.append("I-" + entity)
+                                    doc.user_data["ents"][i] = labels
+                                    break
 
             doc_bin.add(doc)
-    doc_bin.to_disk(target_spacy_path+"n2c2_train_labeled.spacy")
-    nlp.vocab.to_disk(target_spacy_path+"n2c2_train_vocab.spacy")
+    doc_bin.to_disk(target_docbin_path)
+    nlp.vocab.to_disk(target_vocab_path)
 
     print("DONE")
+
 
     ##DEBUG PRINTS -- Weird stuff with spans...
 

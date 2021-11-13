@@ -3,64 +3,103 @@ import argparse
 import spacy
 from spacy.tokens import DocBin
 from spacy.vocab import Vocab
-from preprocess import tokenize_with_labels
+from preprocess import tokenize
 from test import test_load_docbin
 #from visualize import draw
 from visualize import draw_word_level
 from clustering_algos import nearest_centroid_classifier
 parser = argparse.ArgumentParser(description="Run BELIS")
-parser.add_argument("--preprocess", help="Initiate tokenization preprocessing", action="store_true")
-parser.add_argument("--spacy_docbin_path", help="Path to spacy docbin file. Required if --preprocess is not true.")
-parser.add_argument("--spacy_vocab_path", help="Path to spacy vocab file. Required if --preprocess is not true.")
-parser.add_argument("--raw_init_files", help="Path to dir with file(s) for initial tokenizing. Required if --preprocess is true.")
-parser.add_argument("--target_spacy_path", help="where should the spacy containers from preprocess go")
+parser.add_argument("--preprocess", help="Initiate preprocessing step", action="store_true")
+parser.add_argument("--spacy_docbin_preprocess_path", help="Path to spacy docbin file from preprocess step. Required if --preprocess is not true.")
+parser.add_argument("--spacy_vocab_preprocess_path", help="Path to spacy vocab file from preprocess step. Required if --preprocess is not true.")
+parser.add_argument("--raw_preprocess_files", help="Path to dir with file(s) to be tokenized for the preprocess step. Required if --preprocess is true.")
+parser.add_argument("--target_docbin_preprocess_path", help="where you would like the preprocess spacy docbin objects to go (include file name with .spacy at the end), default will save it to \"BELIS/datasets/docbin_preprocess.spacy\"")
+parser.add_argument("--target_vocab_preprocess_path", help="where you would like the preprocess spacy vocab objects to go (include file name with .spacy at the end), default will save it to \"BELIS/datasets/vocab_preprocess.spacy\"")
+parser.add_argument("--target_docbin_inference_path", help="where you would like the inference spacy docbin objects to go (include file name with .spacy at the end), default will save it to \"BELIS/datasets/docbin_inference.spacy\"")
+parser.add_argument("--target_vocab_inference_path", help="where you would like the preprocess spacy vocab objects to go (include file name with .spacy at the end), default will save it to \"BELIS/datasets/vocab_preprocess.spacy\"")
 parser.add_argument("--threads", help="How many threads to use for parallelization. Default is 1.", type=int)
-parser.add_argument("--cross_validation", help="cross validate on data from docbin and vocab",action="store_true")
+parser.add_argument("--cross_validation", help="cross validate on data from docbin and vocab from preprocess",action="store_true")
 parser.add_argument("--visualize", help="visualize clusters with umap",action="store_true")
+parser.add_argument("--raw_inference_files", help="files to tokenize for inference.")
 parser.add_argument("--inference", help="run inference on data from docbin and vocab",action="store_true")
-
-
-
+parser.add_argument("--spacy_docbin_inference_path", help="Path to spacy docbin file of the data to run inference on. Required if --inference is true AND --raw_inference_files is not provided ")
+parser.add_argument("--spacy_vocab_inference_path", help="Path to spacy vocab file of the data to run inference on. Required if --inference is true AND --raw_inference_files is not provided ")
 
 args = parser.parse_args()
 preprocess = args.preprocess
-vocab_path = args.spacy_vocab_path
-docbin_path = args.spacy_docbin_path
-raw_init_files = args.raw_init_files
+spacy_docbin_preprocess_path = args.spacy_docbin_preprocess_path
+spacy_vocab_preprocess_path = args.spacy_vocab_preprocess_path
+raw_preprocess_files = args.raw_preprocess_files
+target_docbin_preprocess_path = args.target_docbin_preprocess_path
+target_vocab_preprocess_path = args.target_vocab_preprocess_path
+target_docbin_inference_path = args.target_docbin_inference_path
+target_vocab_inference_path = args.target_vocab_inference_path
 threads = args.threads
 cross_validation = args.cross_validation
 visualize = args.visualize
+raw_inference_files = args.raw_inference_files
 inference = args.inference
-target_spacy_path = args.target_spacy_path
-if target_spacy_path == None:
-    target_spacy_path="BELIS/datasets/"
+spacy_docbin_inference_path = args.spacy_docbin_inference_path
+spacy_vocab_inference_path = args.spacy_vocab_inference_path
+if target_docbin_preprocess_path == None:
+    target_docbin_preprocess_path = "BELIS/datasets/docbin_preprocess.spacy"
+if target_vocab_preprocess_path == None:
+    target_vocab_preprocess_path="BELIS/datasets/vocab_preprocess.spacy"
+if target_docbin_inference_path == None:
+    target_docbin_inference_path="BELIS/datasets/docbin_inference.spacy"
+if target_vocab_inference_path == None:
+    target_vocab_inference_path = "BELIS/datasets/vocab_inference.spacy"
 print(os.getcwd())
-#Error handling.
-if preprocess and raw_init_files == None:
-    print("Error: No argument specified for raw_files, which is required for preprocess=True")
-    exit()
-elif preprocess!=True and (vocab_path == None or docbin_path == None):
-    print("Error: No argument specified for either --spacy_vocab_path or --spacy_docbin_path, which is required for preprocess=False")
-    exit()
 
-if preprocess: #write actuall preprocessing code here
-    if raw_init_files.endswith("/") == False:
-         raw_init_files += "/"
-    tokenize_with_labels(raw_init_files, target_spacy_path)
-if cross_validation: #clustering the words generated from preprocess, and visualizing them
-    print("Nearest Centroid Classification:")
+#Error handling.
+if preprocess and raw_preprocess_files == None:
+    print("Error: No argument specified for raw_preprocess_files, which is required for preprocess=True")
+    exit()
+elif (cross_validation or inference) and preprocess!=True and (spacy_vocab_preprocess_path == None or spacy_docbin_preprocess_path == None):
+    print("Error: No argument specified for either spacy_vocab_preprocess_path or spacy_docbin_preprocess_path, which is required for cross_validation when preprocess=False")
+    exit()
+elif inference and raw_inference_files == None and (spacy_docbin_inference_path==None or spacy_vocab_inference_path == None):
+    print("Error: No argument specified for raw_inference_files and either spacy_docbin_inference_path or spacy_vocab_inference_path, which is required to perform inference.")
+
+if preprocess: #tokenize preprocessing code here
+    if raw_preprocess_files.endswith("/") == False:
+         raw_preprocess_files += "/"
+    tokenize(raw_preprocess_files, target_docbin_preprocess_path, target_vocab_preprocess_path, False)
+if cross_validation: #clustering the preprocess tokenizationresults
+    print("Nearest Centroid Classification (cross_validation:)")
     docs = []
     if preprocess!=True:
-        doc_bin = DocBin().from_disk(docbin_path)
-        vocab = Vocab().from_disk(vocab_path)
+        doc_bin = DocBin().from_disk(spacy_docbin_preprocess_path)
+        vocab = Vocab().from_disk(spacy_vocab_preprocess_path)
         docs = list(doc_bin.get_docs(vocab))
     else:
-        doc_bin = DocBin().from_disk(target_spacy_path+"n2c2_train_labeled.spacy")
-        vocab = Vocab().from_disk(target_spacy_path+"n2c2_train_vocab.spacy")
+        doc_bin = DocBin().from_disk(target_docbin_preprocess_path)
+        vocab = Vocab().from_disk(target_vocab_preprocess_path)
         docs = list(doc_bin.get_docs(vocab))
-    nearest_centroid_classifier(docs)
-elif visualize:
-    draw_word_level("C:/Users/nehav/Desktop/n2c2_100035_labeled_subwords_real.spacy")
-    #print("Testing load capabilities: \nTODO: Modularize this code in separate cluster_algo file")
+    nearest_centroid_classifier(docs, True)
 
-    #test_load_docbin("BELIS/datasets/n2c2_100035.spacy", "BELIS/datasets/n2c2_100035_vocab.spacy")
+if inference:
+    docs = []
+    #first we need to tokenize the files we are running inference on, if we haven't already
+    if raw_inference_files != None:
+        tokenize(raw_inference_files, target_docbin_inference_path, target_vocab_inference_path, True)
+    spacy_docbin_inference_path = target_docbin_inference_path
+    spacy_vocab_inference_path = target_vocab_inference_path
+    if preprocess:
+        doc_bin = DocBin().from_disk(target_docbin_preprocess_path)
+        vocab = Vocab().from_disk(target_vocab_preprocess_path)
+        docs = list(doc_bin.get_docs(vocab))
+
+    else:
+        doc_bin = DocBin().from_disk(spacy_docbin_preprocess_path)
+        vocab = Vocab().from_disk(spacy_vocab_preprocess_path)
+        docs = list(doc_bin.get_docs(vocab))
+    centroids, label_mapping =nearest_centroid_classifier(docs, False)
+    #now that you have centroids and label_mapping, you can run an inference on the tokenized validation data!
+
+
+
+
+
+if visualize:
+    draw_word_level("C:/Users/nehav/Desktop/n2c2_100035_labeled_subwords_real.spacy")
