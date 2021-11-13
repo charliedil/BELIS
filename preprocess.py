@@ -7,12 +7,15 @@ from transformers import AutoTokenizer, AutoModel
 
 #Method for tokenizing txt files within path provided
 def tokenize(path):
+    ##loading models here so it doesn't slow down my program EVEN MORE
     nlp = spacy.load("en_core_web_sm")
+    tokenizer = AutoTokenizer.from_pretrained("emilyalsentzer/Bio_ClinicalBERT")
+    model = AutoModel.from_pretrained("emilyalsentzer/Bio_ClinicalBERT")
     doc_bin = DocBin(attrs=["LEMMA", "ENT_IOB", "ENT_TYPE"], store_user_data=True) #where we will append the doc files to.
     all_files = list(os.listdir(path))
     txt_files = []
     for file in all_files:
-        if file.endswith(".txt"):
+        if file.endswith(".txt") and file.split(".")[0]+".ann" in all_files:
             txt_files.append(file)
     for file in tqdm(txt_files, "Documents parsed"):
         if file != "102365.txt" and file != "117745.txt" and file != "120301.txt":
@@ -42,8 +45,7 @@ def tokenize(path):
                 spacy_tok_sents.append(sent)
 
             ##BERT tokenizer time
-            tokenizer = AutoTokenizer.from_pretrained("emilyalsentzer/Bio_ClinicalBERT")
-            model = AutoModel.from_pretrained("emilyalsentzer/Bio_ClinicalBERT")
+
             bert_offsets = tokenizer(spacy_tok_sents, padding=True, truncation=True, max_length=512,
                                      return_tensors="pt", is_split_into_words=True,
                                      return_offsets_mapping=True).offset_mapping
